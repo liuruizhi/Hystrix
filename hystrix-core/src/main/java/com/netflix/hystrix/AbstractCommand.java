@@ -521,7 +521,9 @@ import java.util.concurrent.atomic.AtomicReference;
         executionHook.onStart(_cmd);
 
         /* determine if we're allowed to execute */
+        // 判断是否开启断路器
         if (circuitBreaker.attemptExecution()) {
+            // 获取信号量实例
             final TryableSemaphore executionSemaphore = getExecutionSemaphore();
             final AtomicBoolean semaphoreHasBeenReleased = new AtomicBoolean(false);
             final Action0 singleSemaphoreRelease = new Action0() {
@@ -540,6 +542,7 @@ import java.util.concurrent.atomic.AtomicReference;
                 }
             };
 
+            // 尝试获取信号量
             if (executionSemaphore.tryAcquire()) {
                 try {
                     /* used to track userThreadExecutionTime */
@@ -552,9 +555,11 @@ import java.util.concurrent.atomic.AtomicReference;
                     return Observable.error(e);
                 }
             } else {
+                // 拒绝逻辑
                 return handleSemaphoreRejectionViaFallback();
             }
         } else {
+            // 直接走失败的逻辑
             return handleShortCircuitViaFallback();
         }
     }
@@ -599,6 +604,7 @@ import java.util.concurrent.atomic.AtomicReference;
             }
         };
 
+        // 失败处理逻辑
         final Func1<Throwable, Observable<R>> handleFallback = new Func1<Throwable, Observable<R>>() {
             @Override
             public Observable<R> call(Throwable t) {
@@ -633,7 +639,9 @@ import java.util.concurrent.atomic.AtomicReference;
         };
 
         Observable<R> execution;
+        // 是否开启超时设置,在executeCommandWithSpecifiedIsolation，先判断是否进行线程隔离,及一些状态变化之后，进入getUserExecutionObservable
         if (properties.executionTimeoutEnabled().get()) {
+            // 添加超时操作
             execution = executeCommandWithSpecifiedIsolation(_cmd)
                     .lift(new HystrixObservableTimeoutOperator<R>(_cmd));
         } else {
@@ -646,17 +654,22 @@ import java.util.concurrent.atomic.AtomicReference;
                 .doOnEach(setRequestContext);
     }
 
+    // 在executeCommandWithSpecifiedIsolation，先判断是否进行线程隔离,及一些状态变化之后，进入getUserExecutionObservable
     private Observable<R> executeCommandWithSpecifiedIsolation(final AbstractCommand<R> _cmd) {
+        // 线程隔离
         if (properties.executionIsolationStrategy().get() == ExecutionIsolationStrategy.THREAD) {
             // mark that we are executing in a thread (even if we end up being rejected we still were a THREAD execution and not SEMAPHORE)
+            // 当观察者订阅时，才创建Observable，并且针对没个观察者创建都是一个新的Observable。
             return Observable.defer(new Func0<Observable<R>>() {
                 @Override
                 public Observable<R> call() {
                     executionResult = executionResult.setExecutionOccurred();
+                    // 状态校验
                     if (!commandState.compareAndSet(CommandState.OBSERVABLE_CHAIN_CREATED, CommandState.USER_CODE_EXECUTED)) {
                         return Observable.error(new IllegalStateException("execution attempted while in state : " + commandState.get().name()));
                     }
 
+                    // 统计标记命令
                     metrics.markCommandStart(commandKey, threadPoolKey, ExecutionIsolationStrategy.THREAD);
 
                     if (isCommandTimedOut.get() == TimedOutStatus.TIMED_OUT) {
@@ -881,10 +894,12 @@ import java.util.concurrent.atomic.AtomicReference;
         }
     }
 
+    // 封装用户定义的run
     private Observable<R> getUserExecutionObservable(final AbstractCommand<R> _cmd) {
         Observable<R> userObservable;
 
         try {
+            // 获取用户定义逻辑的observable
             userObservable = getExecutionObservable();
         } catch (Throwable ex) {
             // the run() method is a user provided implementation so can throw instead of using Observable.onError

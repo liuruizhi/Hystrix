@@ -293,12 +293,14 @@ public abstract class HystrixCommand<R> extends AbstractCommand<R> implements Hy
         throw new UnsupportedOperationException("No fallback available.");
     }
 
+    // 封装用户定义run方法
     @Override
     final protected Observable<R> getExecutionObservable() {
         return Observable.defer(new Func0<Observable<R>>() {
             @Override
             public Observable<R> call() {
                 try {
+                    // 包装定义的run方法
                     return Observable.just(run());
                 } catch (Throwable ex) {
                     return Observable.error(ex);

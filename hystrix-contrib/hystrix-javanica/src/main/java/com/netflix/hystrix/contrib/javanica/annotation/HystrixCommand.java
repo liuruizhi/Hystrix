@@ -25,6 +25,10 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation used to specify some methods which should be processes as hystrix commands.
+ *
+ * command的配置可以动态更新，实现{@link com.netflix.config.PolledConfigurationSource}
+ *
+ * @author HystrixCommand
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

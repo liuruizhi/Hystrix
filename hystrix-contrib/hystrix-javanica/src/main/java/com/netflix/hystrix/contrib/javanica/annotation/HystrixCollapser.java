@@ -54,6 +54,8 @@ import java.lang.annotation.Target;
  * </pre>
  * <p/>
  * Note: batch command method must be annotated with {@link HystrixCommand} annotation.
+ *
+ * @author HystrixCollapser
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

@@ -144,6 +144,7 @@ public interface HystrixCircuitBreaker {
         }
 
         private final AtomicReference<Status> status = new AtomicReference<Status>(Status.CLOSED);
+        /* 变量circuitOpen来代表断路器的状态，默认是关闭 */
         private final AtomicLong circuitOpened = new AtomicLong(-1);
         private final AtomicReference<Subscription> activeSubscription = new AtomicReference<Subscription>(null);
 
@@ -200,6 +201,7 @@ public interface HystrixCircuitBreaker {
                     });
         }
 
+        /*用于关闭熔断器并重置统计数据*/
         @Override
         public void markSuccess() {
             if (status.compareAndSet(Status.HALF_OPEN, Status.CLOSED)) {
@@ -262,12 +264,15 @@ public interface HystrixCircuitBreaker {
 
         @Override
         public boolean attemptExecution() {
+            // 配置文件属性 -- 强制打开
             if (properties.circuitBreakerForceOpen().get()) {
                 return false;
             }
+            // 配置文件属性 -- 强制关闭
             if (properties.circuitBreakerForceClosed().get()) {
                 return true;
             }
+            // status默认是CLOSED，circuitOpened默认为-1
             if (circuitOpened.get() == -1) {
                 return true;
             } else {
