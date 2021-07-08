@@ -20,6 +20,8 @@ import java.util.BitSet;
 import java.util.List;
 
 /**
+ * 执行结果等信息
+ *
  * Immutable holder class for the status of command execution.
  * <p>
  * This object can be referenced and "modified" by parent and child threads as well as by different instances of HystrixCommand since

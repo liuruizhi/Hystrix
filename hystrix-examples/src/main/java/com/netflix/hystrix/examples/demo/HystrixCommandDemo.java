@@ -52,7 +52,7 @@ public class HystrixCommandDemo {
         ConfigurationManager.getConfigInstance().setProperty("hystrix.command.default.metrics.rollingPercentile.numBuckets", 60);
     }
 
-    /*
+    /**
      * Thread-pool to simulate HTTP requests.
      * 
      * Use CallerRunsPolicy so we can just keep iterating and adding to it and it will block when full.

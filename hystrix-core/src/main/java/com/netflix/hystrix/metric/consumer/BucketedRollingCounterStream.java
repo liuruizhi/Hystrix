@@ -35,6 +35,14 @@ public abstract class BucketedRollingCounterStream<Event extends HystrixEvent, B
     private Observable<Output> sourceStream;
     private final AtomicBoolean isSourceCurrentlySubscribed = new AtomicBoolean(false);
 
+    /**
+     *
+     * @param stream
+     * @param numBuckets
+     * @param bucketSizeInMs
+     * @param appendRawEventToBucket bucket内部统计函数，其功能是起始值Bucket加上Event后，输出Bucket类型值，对数据的处理具有累积的效果；
+     * @param reduceBucket 和 appendRawEventToBucket 类似，用于 window 统计。
+     */
     protected BucketedRollingCounterStream(HystrixEventStream<Event> stream, final int numBuckets, int bucketSizeInMs,
                                            final Func2<Bucket, Event, Bucket> appendRawEventToBucket,
                                            final Func2<Output, Bucket, Output> reduceBucket) {

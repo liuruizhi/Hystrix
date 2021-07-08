@@ -36,12 +36,19 @@ import com.netflix.hystrix.util.HystrixRollingNumber;
  * both coreSize and maximumSize.  This is a fixed-size threadpool that can never give up an unused thread.  In 1.5.7+,
  * the values can diverge, and if you set coreSize < maximumSize, threads can be given up (subject to the keep-alive
  * time)
+ * 1.5.7版本之前coreSize可以同时设置coreSize和maximumSize，之后的版本则可以分开设置
  *
  * It is OK to leave maximumSize unset using any version of Hystrix.  If you do, then maximum size will default to
  * core size and you'll have a fixed-size threadpool.
  *
+ * 任何版本都可以不设置maximumSize，如果不设置该值会和coreSize一致，固定线程池
+ *
  * If you accidentally set maximumSize < coreSize, then maximum will be raised to coreSize
  * (this prioritizes keeping extra threads around rather than inducing threadpool rejections)
+ *
+ * 如果不小心maximumSize < coreSize，则maximumSize会和coreSize一致
+ *
+ * @author HystrixThreadPoolProperties
  */
 public abstract class HystrixThreadPoolProperties {
 
@@ -49,10 +56,23 @@ public abstract class HystrixThreadPoolProperties {
     static int default_coreSize = 10;            // core size of thread pool
     static int default_maximumSize = 10;         // maximum size of thread pool
     static int default_keepAliveTimeMinutes = 1; // minutes to keep a thread alive
-    static int default_maxQueueSize = -1;        // size of queue (this can't be dynamically changed so we use 'queueSizeRejectionThreshold' to artificially limit and reject)
-                                                 // -1 turns it off and makes us use SynchronousQueue
-    static boolean default_allow_maximum_size_to_diverge_from_core_size = false; //should the maximumSize config value get read and used in configuring the threadPool
-                                                                                 //turning this on should be a conscious decision by the user, so we default it to false
+    /**
+     * size of queue (this can't be dynamically changed so we use 'queueSizeRejectionThreshold' to artificially limit and reject)
+     * -1 turns it off and makes us use SynchronousQueue
+     * 队列的大小（该值无法动态更改，因此我们使用queueSizeRejectionThreshold来人为的限制和拒绝）
+     * -1关闭并让我们使用SynchronousQueue
+     */
+    static int default_maxQueueSize = -1;
+
+    /**
+     * should the maximumSize config value get read and used in configuring the threadPool
+     * turning this on should be a conscious decision by the user, so we default it to false
+     * 是否应该读取maximumSize配置值并用于配置threadPool
+     * 这个应该是用户自主决定的，所以默认为false
+     * {@link HystrixConcurrencyStrategy#getThreadPool(HystrixThreadPoolKey, HystrixThreadPoolProperties)}
+     */
+    static boolean default_allow_maximum_size_to_diverge_from_core_size = false;
+
 
     static int default_queueSizeRejectionThreshold = 5; // number of items in queue
     static int default_threadPoolRollingNumberStatisticalWindow = 10000; // milliseconds for rolling number

@@ -52,6 +52,7 @@ public class HystrixCommandMetrics extends HystrixMetrics {
             ExecutionResult.EventCounts eventCounts = execution.getEventCounts();
             for (HystrixEventType eventType: ALL_EVENT_TYPES) {
                 switch (eventType) {
+                    // TODO 为什么break？
                     case EXCEPTION_THROWN: break; //this is just a sum of other anyway - don't do the work here
                     default:
                         initialCountArray[eventType.ordinal()] += eventCounts.getCount(eventType);

@@ -17,7 +17,9 @@ package com.netflix.hystrix;
 
 /**
  * Marker interface for Hystrix commands that can be invoked.
- * 标识接口
+ * 标识接口，can be invoked
+ *
+ * @author HystrixInvokable
  */
 public interface HystrixInvokable<R> {
 

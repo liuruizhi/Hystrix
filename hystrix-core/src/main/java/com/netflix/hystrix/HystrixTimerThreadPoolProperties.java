@@ -9,6 +9,7 @@ import com.netflix.hystrix.strategy.properties.HystrixProperty;
  * Properties for Hystrix timer thread pool.
  * <p>
  * Default implementation of methods uses Archaius (https://github.com/Netflix/archaius)
+ * @author HystrixTimerThreadPoolProperties
  */
 public abstract class HystrixTimerThreadPoolProperties {
 

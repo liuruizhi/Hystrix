@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * See {@link HystrixPlugins} or the Hystrix GitHub Wiki for information on configuring plugins: <a
  * href="https://github.com/Netflix/Hystrix/wiki/Plugins">https://github.com/Netflix/Hystrix/wiki/Plugins</a>.
+ *
+ * @author HystrixConcurrencyStrategy
  */
 public abstract class HystrixConcurrencyStrategy {
 
@@ -100,6 +102,7 @@ public abstract class HystrixConcurrencyStrategy {
         final int maxQueueSize = threadPoolProperties.maxQueueSize().get();
         final BlockingQueue<Runnable> workQueue = getBlockingQueue(maxQueueSize);
 
+        // 如果允许自定义最大值，则使用用户自定义的最大值，该值
         if (allowMaximumSizeToDivergeFromCoreSize) {
             final int dynamicMaximumSize = threadPoolProperties.maximumSize().get();
             if (dynamicCoreSize > dynamicMaximumSize) {

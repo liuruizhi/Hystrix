@@ -42,7 +42,8 @@ public class CommandHelloWorld extends HystrixCommand<String> {
 
     @Override
     protected String run() {
-        return "Hello " + name + "!";
+//        return "Hello " + name + "!";
+        throw new RuntimeException();
     }
 
     public static class UnitTest {
@@ -90,7 +91,7 @@ public class CommandHelloWorld extends HystrixCommand<String> {
 
                 @Override
                 public void onError(Throwable e) {
-                    e.printStackTrace();
+                    System.out.println("error");;
                 }
 
                 @Override

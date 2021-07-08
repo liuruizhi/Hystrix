@@ -59,9 +59,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /* package */abstract class AbstractCommand<R> implements HystrixInvokableInfo<R>, HystrixObservable<R> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractCommand.class);
+    /**
+     * 断路器
+     */
     protected final HystrixCircuitBreaker circuitBreaker;
     protected final HystrixThreadPool threadPool;
     protected final HystrixThreadPoolKey threadPoolKey;
+    /**
+     * 一些默认配置
+     */
     protected final HystrixCommandProperties properties;
 
     protected enum TimedOutStatus {
@@ -361,6 +367,7 @@ import java.util.concurrent.atomic.AtomicReference;
      * @throws IllegalStateException
      *             if invoked more than once
      */
+    @Override
     public Observable<R> toObservable() {
         final AbstractCommand<R> _cmd = this;
 
@@ -966,6 +973,7 @@ import java.util.concurrent.atomic.AtomicReference;
         }
 
         long userThreadLatency = System.currentTimeMillis() - commandStartTimestamp;
+        // TODO executionResult和executionResultAtTimeOfCancellation都是ExecutionResult？
         executionResult = executionResult.markUserThreadCompletion((int) userThreadLatency);
         if (executionResultAtTimeOfCancellation == null) {
             metrics.markCommandDone(executionResult, commandKey, threadPoolKey, commandExecutionStarted);

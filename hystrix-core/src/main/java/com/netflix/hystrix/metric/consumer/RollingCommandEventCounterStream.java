@@ -45,8 +45,11 @@ public class RollingCommandEventCounterStream extends BucketedRollingCounterStre
     private static final int NUM_EVENT_TYPES = HystrixEventType.values().length;
 
     public static RollingCommandEventCounterStream getInstance(HystrixCommandKey commandKey, HystrixCommandProperties properties) {
+        // 统计周期（默认10s）
         final int counterMetricWindow = properties.metricsRollingStatisticalWindowInMilliseconds().get();
+        // 桶数量（默认10个）
         final int numCounterBuckets = properties.metricsRollingStatisticalWindowBuckets().get();
+        // 桶统计周期（默认100ms）
         final int counterBucketSizeInMs = counterMetricWindow / numCounterBuckets;
 
         return getInstance(commandKey, numCounterBuckets, counterBucketSizeInMs);

@@ -18,11 +18,14 @@ package com.netflix.hystrix;
 import com.netflix.hystrix.util.InternMap;
 
 /**
+ * 对command进行分组便于统计等
+ *
  * A group name for a {@link HystrixCommand}. This is used for grouping together commands such as for reporting, alerting, dashboards or team/library ownership.
  * <p>
  * By default this will be used to define the {@link HystrixThreadPoolKey} unless a separate one is defined.
  * <p>
  * This interface is intended to work natively with Enums so that implementing code can have an enum with the owners that implements this interface.
+ * @author HystrixCommandGroupKey
  */
 public interface HystrixCommandGroupKey extends HystrixKey {
     class Factory {
@@ -30,6 +33,7 @@ public interface HystrixCommandGroupKey extends HystrixKey {
         }
 
         // used to intern instances so we don't keep re-creating them millions of times for the same key
+        // InternMap内部就是一个ConcurrentHashMap，然后有一个接口ValueConstructor，如下提供了默认实现create
         private static final InternMap<String, HystrixCommandGroupDefault> intern
                 = new InternMap<String, HystrixCommandGroupDefault>(
                 new InternMap.ValueConstructor<String, HystrixCommandGroupDefault>() {

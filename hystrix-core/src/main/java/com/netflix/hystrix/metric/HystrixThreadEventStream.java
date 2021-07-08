@@ -124,6 +124,11 @@ public class HystrixThreadEventStream {
                 .unsafeSubscribe(Subscribers.empty());
     }
 
+    /**
+     * 从ThreadLocal里获取
+     *
+     * @return
+     */
     public static HystrixThreadEventStream getInstance() {
         return threadLocalStreams.get();
     }

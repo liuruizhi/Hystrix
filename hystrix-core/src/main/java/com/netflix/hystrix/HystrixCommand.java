@@ -43,6 +43,7 @@ import rx.functions.Func0;
  *            the return type
  * 
  * @ThreadSafe
+ * @author HystrixCommand
  */
 public abstract class HystrixCommand<R> extends AbstractCommand<R> implements HystrixExecutable<R>, HystrixInvokableInfo<R>, HystrixObservable<R> {
 

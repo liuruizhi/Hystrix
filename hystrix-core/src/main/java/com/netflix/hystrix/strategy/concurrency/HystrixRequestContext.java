@@ -63,7 +63,7 @@ import com.netflix.hystrix.HystrixRequestLog;
  */
 public class HystrixRequestContext implements Closeable {
 
-    /*
+    /**
      * ThreadLocal on each thread will hold the HystrixRequestVariableState.
      * 
      * Shutdown will clear the state inside HystrixRequestContext but not nullify the ThreadLocal on all

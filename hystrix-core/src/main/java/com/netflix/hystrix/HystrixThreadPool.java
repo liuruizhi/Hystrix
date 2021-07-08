@@ -73,6 +73,8 @@ public interface HystrixThreadPool {
     public void markThreadRejection();
 
     /**
+     * 是否可以动态的更新队列大小
+     *
      * Whether the queue will allow adding an item to it.
      * <p>
      * This allows dynamic control of the max queueSize versus whatever the actual max queueSize is so that dynamic changes can be done via property changes rather than needing an app
@@ -261,6 +263,8 @@ public interface HystrixThreadPool {
          */
         @Override
         public boolean isQueueSpaceAvailable() {
+            // 如果为-1则可以动态调整
+            // HystrixThreadPoolProperties.default_maxQueueSize
             if (queueSize <= 0) {
                 // we don't have a queue so we won't look for space but instead
                 // let the thread-pool reject or not
