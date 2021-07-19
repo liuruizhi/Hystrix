@@ -54,12 +54,19 @@ public interface HystrixCommandGroupKey extends HystrixKey {
            return intern.interned(name);
         }
 
+        /**
+         * 类名含有default，但是所有的都是这个，也不存在是不是default一说
+         */
         private static class HystrixCommandGroupDefault extends HystrixKey.HystrixKeyDefault implements HystrixCommandGroupKey {
             public HystrixCommandGroupDefault(String name) {
                 super(name);
             }
         }
 
+        /**
+         * 就是map的大小
+         * @return
+         */
         /* package-private */ static int getGroupCount() {
             return intern.size();
         }

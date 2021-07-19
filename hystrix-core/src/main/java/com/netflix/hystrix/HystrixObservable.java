@@ -23,7 +23,8 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 
 /**
- * Common interface for executables that implement the Observable methods {@link #observe()} and {@link #toObservable()} so client code can treat them the same and combine in typed collections if desired.
+ * Common interface for executables that implement the Observable methods {@link #observe()} and {@link #toObservable()}
+ * so client code can treat them the same and combine in typed collections if desired.
  * 
  * @param <R>
  * @author HystrixObservable
