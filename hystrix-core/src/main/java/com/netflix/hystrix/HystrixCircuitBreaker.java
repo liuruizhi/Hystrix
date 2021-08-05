@@ -66,7 +66,7 @@ public interface HystrixCircuitBreaker {
 
     /**
      * Invoked at start of command execution to attempt an execution.  This is non-idempotent - it may modify internal
-     * command执行开始时进行尝试。该方法不是幂等的，可能会改变内部状态
+     * command执行开始时进行尝试。该方法不是幂等的，可能会改变内部状态（如果过来休眠期将状态改为半开状态）
      * state.
      */
     boolean attemptExecution();
@@ -205,6 +205,10 @@ public interface HystrixCircuitBreaker {
                                 // if it was CLOSED, it stays CLOSED
                                 // if it was half-open, we need to wait for a successful command execution
                                 // if it was open, we need to wait for sleep window to elapse
+                                // 如果没有超过统计窗口的请求量阈值,则不改变断路器状态，
+                                // 如果它是CLOSED状态，那么仍然是CLOSED.
+                                // 如果它是HALF-OPEN状态，我们需要等待请求被成功执行，
+                                // 如果它是OPEN状态， 我们需要等待睡眠窗口过去。
                             } else {
                                 // 这里说明请求数达到设定值，然后判断错误率是否小于设定值，如果小于设定值则不进行任何操作，维持原状态
                                 if (hc.getErrorPercentage() < properties.circuitBreakerErrorThresholdPercentage().get()) {
@@ -213,6 +217,10 @@ public interface HystrixCircuitBreaker {
                                     // if it was CLOSED, it stays CLOSED
                                     // if it was half-open, we need to wait for a successful command execution
                                     // if it was open, we need to wait for sleep window to elapse
+                                    // 如果没有超过统计窗口的错误率阈值,则不改变断路器状态，,
+                                    // 如果它是CLOSED状态，那么仍然是CLOSED.
+                                    // 如果它是HALF-OPEN状态，我们需要等待请求被成功执行，
+                                    // 如果它是OPEN状态， 我们需要等待【睡眠窗口】过去。
                                 } else {
                                     // our failure rate is too high, we need to set the state to OPEN
                                     // 错误率超过指定值，则打开断路器
@@ -311,6 +319,9 @@ public interface HystrixCircuitBreaker {
                     //if the executing command succeeds, the status will transition to CLOSED
                     //if the executing command fails, the status will transition to OPEN
                     //if the executing command gets unsubscribed, the status will transition to OPEN
+                    // 通过compareAndSet实现只有睡眠后的第一个请求会正常请求下游
+                    // 如果执行成功则关闭断路器
+                    // 如果执行失败则打开断路器
                     if (status.compareAndSet(Status.OPEN, Status.HALF_OPEN)) {
                         return true;
                     } else {

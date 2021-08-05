@@ -160,20 +160,48 @@ import java.util.concurrent.atomic.AtomicReference;
         return name;
     }
 
+    /**
+     * 因为Command对象是有状态的（比如每次请求参数可能不同），所以每次请求都需要新创建Command，这么多初始化工作，如果并发量过高，会不会带来过大的系统开销？
+     * 其实构造函数中的很多初始化工作只会集中在创建第一个Command时来做，后续创建的Command对象主要是从静态Map中取对应的实例来赋值，比如监控器、断路器和线程池的初始化，
+     * 因为相同的Command的command key和线程池key都是一致的
+     * ————————————————
+     * 版权声明：本文为CSDN博主「飞向札幌的班机」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+     * 原文链接：https://blog.csdn.net/manzhizhen/article/details/80296655
+     * @param group
+     * @param key
+     * @param threadPoolKey
+     * @param circuitBreaker
+     * @param threadPool
+     * @param commandPropertiesDefaults
+     * @param threadPoolPropertiesDefaults
+     * @param metrics
+     * @param fallbackSemaphore
+     * @param executionSemaphore
+     * @param propertiesStrategy
+     * @param executionHook
+     */
     protected AbstractCommand(HystrixCommandGroupKey group, HystrixCommandKey key, HystrixThreadPoolKey threadPoolKey, HystrixCircuitBreaker circuitBreaker, HystrixThreadPool threadPool,
             HystrixCommandProperties.Setter commandPropertiesDefaults, HystrixThreadPoolProperties.Setter threadPoolPropertiesDefaults,
             HystrixCommandMetrics metrics, TryableSemaphore fallbackSemaphore, TryableSemaphore executionSemaphore,
             HystrixPropertiesStrategy propertiesStrategy, HystrixCommandExecutionHook executionHook) {
 
+        // 初始化group，group主要是用来对不同的command key进行统一管理，比如统一监控、告警等
         this.commandGroup = initGroupKey(group);
+        // 初始化command key，用来标识降级逻辑，可以理解成command的id
         this.commandKey = initCommandKey(key, getClass());
+        // 初始化自定义的降级策略
         this.properties = initCommandProperties(this.commandKey, propertiesStrategy, commandPropertiesDefaults);
+        // 初始化线程池key，相同的线程池key将公用线程池
         this.threadPoolKey = initThreadPoolKey(threadPoolKey, this.commandGroup, this.properties.executionIsolationThreadPoolKeyOverride().get());
+        // 初始化监控器
         this.metrics = initMetrics(metrics, this.commandGroup, this.threadPoolKey, this.commandKey, this.properties);
+        // 初始化断路器
         this.circuitBreaker = initCircuitBreaker(this.properties.circuitBreakerEnabled().get(), circuitBreaker, this.commandGroup, this.commandKey, this.properties, this.metrics);
+        // 初始化线程池
         this.threadPool = initThreadPool(threadPool, this.threadPoolKey, threadPoolPropertiesDefaults);
 
         //Strategies from plugins
+        // Hystrix通过SPI实现了插件机制，允许用户对事件通知、处理和策略进行自定义
         this.eventNotifier = HystrixPlugins.getInstance().getEventNotifier();
         this.concurrencyStrategy = HystrixPlugins.getInstance().getConcurrencyStrategy();
         HystrixMetricsPublisherFactory.createOrRetrievePublisherForCommand(this.commandKey, this.commandGroup, this.metrics, this.circuitBreaker, this.properties);

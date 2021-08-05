@@ -50,10 +50,22 @@ public class HystrixRollingNumber {
 
     private static final Time ACTUAL_TIME = new ActualTime();
     private final Time time;
+    /**
+     * 统计的时间长度（毫秒单位）
+     */
     final int timeInMilliseconds;
+    /**
+     * bucket数量
+     */
     final int numberOfBuckets;
+    /**
+     * 每个Bucket所对应的时间片（毫秒单位）
+     */
     final int bucketSizeInMillseconds;
 
+    /**
+     * 使用BucketCircularArray帮助维持环形数组桶
+     */
     final BucketCircularArray buckets;
     private final CumulativeSum cumulativeSum = new CumulativeSum();
 
@@ -261,7 +273,9 @@ public class HystrixRollingNumber {
          * 
          * NOTE: This is thread-safe because it's accessing 'buckets' which is a LinkedBlockingDeque
          */
+        // 获取最后一个Bucket（即最新一个Bucket）
         Bucket currentBucket = buckets.peekLast();
+        // 如果当前时间是在currentBucket对应的时间窗口内，直接返回currentBucket
         if (currentBucket != null && currentTime < currentBucket.windowStart + this.bucketSizeInMillseconds) {
             // if we're within the bucket 'window of time' return the current one
             // NOTE: We do not worry if we are BEFORE the window in a weird case of where thread scheduling causes that to occur,
@@ -270,6 +284,7 @@ public class HystrixRollingNumber {
         }
 
         /* if we didn't find the current bucket above, then we have to create one */
+        // 如果当前时间对应的Bucket不存在，我们需要创建一个
 
         /**
          * The following needs to be synchronized/locked even with a synchronized/thread-safe data structure such as LinkedBlockingDeque because
@@ -293,8 +308,10 @@ public class HystrixRollingNumber {
          * bucket to calculate the sum themselves. This is an example of favoring write-performance instead of read-performance and how the tryLock
          * versus a synchronized block needs to be accommodated.
          */
+        // 尝试获取一次锁
         if (newBucketLock.tryLock()) {
             try {
+                // 首次创建
                 if (buckets.peekLast() == null) {
                     // the list is empty so create the first bucket
                     Bucket newBucket = new Bucket(currentTime);
@@ -303,6 +320,7 @@ public class HystrixRollingNumber {
                 } else {
                     // We go into a loop so that it will create as many buckets as needed to catch up to the current time
                     // as we want the buckets complete even if we don't have transactions during a period of time.
+                    // 将创建一个或者多个Bucket，直到Bucket代表的时间窗口赶上当前时间
                     for (int i = 0; i < numberOfBuckets; i++) {
                         // we have at least 1 bucket so retrieve it
                         Bucket lastBucket = buckets.peekLast();
@@ -329,7 +347,7 @@ public class HystrixRollingNumber {
             } finally {
                 newBucketLock.unlock();
             }
-        } else {
+        } else { // 没有获取到锁，尝试获取最新一个Bucket
             currentBucket = buckets.peekLast();
             if (currentBucket != null) {
                 // we didn't get the lock so just return the latest bucket while another thread creates the next one
@@ -337,6 +355,7 @@ public class HystrixRollingNumber {
             } else {
                 // the rare scenario where multiple threads raced to create the very first bucket
                 // wait slightly and then use recursion while the other thread finishes creating a bucket
+                // 多个线程同时创建第一个Bucket，尝试等待，递归调用getCurrentBucket
                 try {
                     Thread.sleep(5);
                 } catch (Exception e) {
@@ -364,8 +383,17 @@ public class HystrixRollingNumber {
      * Counters for a given 'bucket' of time.
      */
     /* package */static class Bucket {
+        /**
+         * 标识哪一秒的数据
+         */
         final long windowStart;
+        /**
+         * 简单自增统计
+         */
         final LongAdder[] adderForCounterType;
+        /**
+         * 并发量统计
+         */
         final LongMaxUpdater[] updaterForCounterType;
 
         Bucket(long startTime) {
@@ -519,10 +547,21 @@ public class HystrixRollingNumber {
              * this is an AtomicReferenceArray and not a normal Array because we're copying the reference
              * between ListState objects and multiple threads could maintain references across these
              * compound operations so I want the visibility/concurrency guarantees
+             * ListState持有Bucket数组对象，但是这个数组不是普通的数组而是AtomicReferenceArray，
+             * 这是因为我们会在ListState对象之间拷贝reference，多个线程之间会通过复合操作持有引用，我们想要保证可见性/并发性
              */
             private final AtomicReferenceArray<Bucket> data;
+            /**
+             * 持有的Bucket数组大小，可以增加，但是最大值是numBuckets
+             */
             private final int size;
+            /**
+             * 数组的尾部地址
+             */
             private final int tail;
+            /**
+             * 数组的头部地址
+             */
             private final int head;
 
             private ListState(AtomicReferenceArray<Bucket> data, int head, int tail) {

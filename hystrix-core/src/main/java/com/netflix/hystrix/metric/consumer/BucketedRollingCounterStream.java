@@ -53,9 +53,12 @@ public abstract class BucketedRollingCounterStream<Event extends HystrixEvent, B
                 return window.scan(getEmptyOutputValue(), reduceBucket).skip(numBuckets);
             }
         };
-        this.sourceStream = bucketedStream      //stream broken up into buckets
-                .window(numBuckets, 1)          //emit overlapping windows of buckets
-                .flatMap(reduceWindowToSummary) //convert a window of bucket-summaries into a single summary
+        //stream broken up into buckets
+        this.sourceStream = bucketedStream
+                //emit overlapping windows of buckets
+                .window(numBuckets, 1)
+                //convert a window of bucket-summaries into a single summary
+                .flatMap(reduceWindowToSummary)
                 .doOnSubscribe(new Action0() {
                     @Override
                     public void call() {

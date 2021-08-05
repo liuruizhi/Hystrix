@@ -103,6 +103,7 @@ public class HystrixTimer {
             }
         };
 
+        // listener.getIntervalTimeInMilliseconds()超时时间，该值之后启动定时任务
         ScheduledFuture<?> f = executor.get().getThreadPool().scheduleAtFixedRate(r, listener.getIntervalTimeInMilliseconds(), listener.getIntervalTimeInMilliseconds(), TimeUnit.MILLISECONDS);
         return new TimerReference(listener, f);
     }

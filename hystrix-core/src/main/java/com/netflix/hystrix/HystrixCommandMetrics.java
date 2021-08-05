@@ -82,7 +82,10 @@ public class HystrixCommandMetrics extends HystrixMetrics {
         }
     };
 
-    // String is HystrixCommandKey.name() (we can't use HystrixCommandKey directly as we can't guarantee it implements hashcode/equals correctly)
+    /**
+     * String is HystrixCommandKey.name() (we can't use HystrixCommandKey directly as we can't guarantee it implements hashcode/equals correctly)
+     * key是HystrixCommandKey.name()，不能直接使用HystrixCommandKey，因为无法保证其hashcode/equals方法被正确的重写
+     */
     private static final ConcurrentHashMap<String, HystrixCommandMetrics> metrics = new ConcurrentHashMap<String, HystrixCommandMetrics>();
 
     /**
@@ -390,8 +393,17 @@ public class HystrixCommandMetrics extends HystrixMetrics {
      * Error percentage;
      */
     public static class HealthCounts {
+        /**
+         * 总数
+         */
         private final long totalCount;
+        /**
+         * 错误数
+         */
         private final long errorCount;
+        /**
+         * 错误率
+         */
         private final int errorPercentage;
 
         HealthCounts(long total, long error) {
