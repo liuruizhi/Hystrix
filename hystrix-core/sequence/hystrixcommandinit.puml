@@ -1,0 +1,60 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+HystrixCommand -> HystrixCommand: HystrixCommand(Setter setter)
+HystrixCommand -> HystrixCommand: HystrixCommand(HystrixCommandGroupKey group...
+
+note left
+HystrixCommand(HystrixCommandGroupKey group, HystrixCommandKey key, HystrixThreadPoolKey threadPoolKey, HystrixCircuitBreaker circuitBreaker, HystrixThreadPool threadPool,
+            HystrixCommandProperties.Setter commandPropertiesDefaults, HystrixThreadPoolProperties.Setter threadPoolPropertiesDefaults,
+            HystrixCommandMetrics metrics, TryableSemaphore fallbackSemaphore, TryableSemaphore executionSemaphore,
+            HystrixPropertiesStrategy propertiesStrategy, HystrixCommandExecutionHook executionHook)
+end note
+
+HystrixCommand -> AbstractCommand: 父类
+activate AbstractCommand
+note right
+protected AbstractCommand(HystrixCommandGroupKey group, HystrixCommandKey key, HystrixThreadPoolKey threadPoolKey, HystrixCircuitBreaker circuitBreaker, HystrixThreadPool threadPool,
+            HystrixCommandProperties.Setter commandPropertiesDefaults, HystrixThreadPoolProperties.Setter threadPoolPropertiesDefaults,
+            HystrixCommandMetrics metrics, TryableSemaphore fallbackSemaphore, TryableSemaphore executionSemaphore,
+            HystrixPropertiesStrategy propertiesStrategy, HystrixCommandExecutionHook executionHook)
+end note
+
+AbstractCommand -> AbstractCommand: 初始化操作
+AbstractCommand -> AbstractCommand: properties初始化
+note left
+initCommandProperties(this.commandKey, propertiesStrategy, commandPropertiesDefaults)
+end note
+
+AbstractCommand -> HystrixPropertiesFactory:创建commandProperties
+activate HystrixPropertiesFactory
+
+HystrixPropertiesFactory -> HystrixCommandProperties:创建setter
+activate HystrixCommandProperties
+HystrixCommandProperties -> HystrixPropertiesFactory: 创建默认setter
+deactivate HystrixCommandProperties
+
+HystrixPropertiesFactory -> HystrixPropertiesStrategy: create new instance(HystrixCommandProperties)
+activate HystrixPropertiesStrategy
+HystrixPropertiesStrategy -> HystrixPropertiesCommandDefault: 创建默认HystrixProperties
+activate HystrixPropertiesCommandDefault
+HystrixPropertiesCommandDefault -> HystrixCommandProperties: 父类构造方法
+deactivate
+HystrixCommandProperties -> HystrixCommandProperties: 使用其他构造函数
+note left: this(key, builder, "hystrix")前缀：hystrix
+activate HystrixCommandProperties
+HystrixCommandProperties -> HystrixPropertiesCommandDefault
+deactivate
+HystrixPropertiesCommandDefault -> HystrixPropertiesStrategy: 返回默认HystrixProperties
+HystrixPropertiesStrategy -> HystrixPropertiesFactory: 返回默认HystrixProperties
+deactivate
+HystrixPropertiesFactory -> HystrixPropertiesFactory: 缓存HystrixProperties
+HystrixPropertiesFactory -> AbstractCommand: 初始化commandProperties结束
+deactivate
+AbstractCommand -> AbstractCommand: 初始化其他值
+activate AbstractCommand
+deactivate
+
+@enduml
