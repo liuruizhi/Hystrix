@@ -132,6 +132,7 @@ public abstract class HystrixCommand<R> extends AbstractCommand<R> implements Hy
      */
     protected HystrixCommand(Setter setter) {
         // use 'null' to specify use the default
+        // propertiesStrategy是null，后面会根据该参数判断是否需要创建默认HystrixCommandProperties
         this(setter.groupKey, setter.commandKey, setter.threadPoolKey, null, null, setter.commandPropertiesDefaults, setter.threadPoolPropertiesDefaults, null, null, null, null, null);
     }
 
@@ -141,6 +142,19 @@ public abstract class HystrixCommand<R> extends AbstractCommand<R> implements Hy
      * Some of these never have a legitimate reason for injection except in unit testing.
      * <p>
      * Most of the args will revert to a valid default if 'null' is passed in.
+     *
+     * @param group
+     * @param key
+     * @param threadPoolKey
+     * @param circuitBreaker
+     * @param threadPool
+     * @param commandPropertiesDefaults
+     * @param threadPoolPropertiesDefaults
+     * @param metrics
+     * TODO @param fallbackSemaphore
+     * TODO @param executionSemaphore
+     * TODO @param propertiesStrategy
+     * TODO @param executionHook
      */
     /* package for testing */HystrixCommand(HystrixCommandGroupKey group, HystrixCommandKey key, HystrixThreadPoolKey threadPoolKey, HystrixCircuitBreaker circuitBreaker, HystrixThreadPool threadPool,
             HystrixCommandProperties.Setter commandPropertiesDefaults, HystrixThreadPoolProperties.Setter threadPoolPropertiesDefaults,
