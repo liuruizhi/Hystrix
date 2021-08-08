@@ -76,6 +76,9 @@ public abstract class HystrixConcurrencyStrategy {
      * @param workQueue
      *            {@code BlockingQueue<Runnable>} as provided by {@link #getBlockingQueue(int)}
      * @return instance of {@link ThreadPoolExecutor}
+     *
+     * 线程均以守护线程形式，线程名为：`hystrix-threadPoolKey.name()-1/2/3/4...`
+     *
      */
     public ThreadPoolExecutor getThreadPool(final HystrixThreadPoolKey threadPoolKey, HystrixProperty<Integer> corePoolSize, HystrixProperty<Integer> maximumPoolSize, HystrixProperty<Integer> keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         final ThreadFactory threadFactory = getThreadFactory(threadPoolKey);
@@ -93,6 +96,15 @@ public abstract class HystrixConcurrencyStrategy {
         }
     }
 
+    /**
+     * 配置来自于HystrixThreadPoolProperties，默认值是：
+     * core核心是10，最大值max也是10,keepAliveTimeMinutes=1分钟
+     * BlockingQueue因为不能配置，所以参见下面的这个getBlockingQueue方法
+     *
+     * @param threadPoolKey
+     * @param threadPoolProperties
+     * @return
+     */
     public ThreadPoolExecutor getThreadPool(final HystrixThreadPoolKey threadPoolKey, HystrixThreadPoolProperties threadPoolProperties) {
         final ThreadFactory threadFactory = getThreadFactory(threadPoolKey);
 
@@ -159,17 +171,20 @@ public abstract class HystrixConcurrencyStrategy {
          * Queuing results in added latency and would only occur when the thread-pool is full at which point there are latency issues
          * and rejecting is the preferred solution.
          */
+        // 如果maxQueueSize木值，那就使用同步队列 -> 木有缓冲区
         if (maxQueueSize <= 0) {
             return new SynchronousQueue<Runnable>();
         } else {
+            // 否则使用Linked，队列大小是maxQueueSize哦（并不是无界的哦）
             return new LinkedBlockingQueue<Runnable>(maxQueueSize);
         }
     }
 
     /**
-     * Provides an opportunity to wrap/decorate a {@code Callable<T>} before execution.
+     * Provides an opportunity（机会） to wrap/decorate a {@code Callable<T>} before execution.
      * <p>
      * This can be used to inject additional behavior such as copying of thread state (such as {@link ThreadLocal}).
+     * 这可用于注入额外的行为，例如复制线程状态（例如 {@link ThreadLocal}）。
      * <p>
      * <b>Default Implementation</b>
      * <p>
@@ -178,6 +193,10 @@ public abstract class HystrixConcurrencyStrategy {
      * @param callable
      *            {@code Callable<T>} to be executed via a {@link ThreadPoolExecutor}
      * @return {@code Callable<T>} either as a pass-thru or wrapping the one given
+     *
+     * 给调用者一个机会，然你可以对callback进行包装一把
+     * 该方法在HystrixContextRunnable、HystrixContextCallable、HystrixContexSchedulerAction里均会被调用
+     *
      */
     public <T> Callable<T> wrapCallable(Callable<T> callable) {
         return callable;

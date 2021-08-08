@@ -75,7 +75,17 @@ public interface HystrixDynamicProperties {
                 HystrixDynamicProperties properties, String name, T fallback, Class<T> type) {
             return (HystrixDynamicProperty<T>) doProperty(properties, name, fallback, type);
         }
-        
+
+        /**
+         * delegate: 1）{@link HystrixDynamicPropertiesSystemProperties} 会调用System.getProperty获取属性值
+         *           2）{@link com.netflix.hystrix.strategy.properties.archaius.HystrixDynamicPropertiesArchaius}
+         *
+         * @param delegate
+         * @param name
+         * @param fallback
+         * @param type
+         * @return
+         */
         private static HystrixDynamicProperty<?> doProperty(
                 HystrixDynamicProperties delegate, 
                 String name, Object fallback, Class<?> type) {

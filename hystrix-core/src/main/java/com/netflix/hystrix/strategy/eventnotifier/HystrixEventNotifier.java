@@ -34,6 +34,7 @@ import com.netflix.hystrix.strategy.HystrixPlugins;
  * <p>
  * Methods are also invoked synchronously and will add to execution time of the commands so all behavior should be fast. If anything time-consuming is to be done it should be spawned asynchronously
  * onto separate worker threads.
+ * 这个notifier是同步调用的，因此里头方法的实现不能太耗时，不然则会阻塞，如果方法太耗时则需要考虑异步到其他线程。
  */
 public abstract class HystrixEventNotifier {
 
@@ -44,6 +45,8 @@ public abstract class HystrixEventNotifier {
      * 
      * @param eventType event type
      * @param key event key
+     *
+     * 空实现：当任意事件被触发时，均执行此方法
      */
     public void markEvent(HystrixEventType eventType, HystrixCommandKey key) {
         // do nothing
@@ -55,6 +58,9 @@ public abstract class HystrixEventNotifier {
      * Will not get called if a command is rejected, short-circuited etc.
      * <p>
      * <b>Default Implementation: </b> Does nothing
+     *
+     * 空实现：当使用线程隔离方式，触发事件时执行此方法
+     * 注意：如果被拒绝rejected（比如断路器全开了）、或者短路short-circuited了，那么此方法是不会被调用的
      * 
      * @param key
      *            {@link HystrixCommandKey} of command instance.

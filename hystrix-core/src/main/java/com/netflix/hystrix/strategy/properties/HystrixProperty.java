@@ -47,6 +47,10 @@ public interface HystrixProperty<T> {
         }
 
         /**
+         * 和Archaius集成，让属性具有动态性
+         * 但是DynamicIntegerProperty等API不是archius提供的，而是HystrixPropertiesChainedArchaiusProperty提供的
+         * 但是默认实现是Archaius
+         *
          * @ExcludeFromJavadoc
          */
         public static HystrixProperty<Integer> asProperty(final DynamicIntegerProperty value) {
@@ -138,6 +142,7 @@ public interface HystrixProperty<T> {
 
                 @Override
                 public T get() {
+                    // 只要第一个不为null就直接返回
                     for (HystrixProperty<T> v : values) {
                         // return the first one that doesn't return null
                         if (v.get() != null) {

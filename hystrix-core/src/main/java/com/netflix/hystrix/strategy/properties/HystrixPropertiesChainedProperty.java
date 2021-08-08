@@ -256,7 +256,16 @@ public abstract class HystrixPropertiesChainedProperty {
         }
         
     }
-    
+
+    /**
+     * 实现动态更新的关键
+     *
+     * @param propName
+     * @param defaultValue
+     * @param type
+     * @param <T>
+     * @return
+     */
     private static <T> HystrixDynamicProperty<T> 
         getDynamicProperty(String propName, T defaultValue, Class<T> type) {
         HystrixDynamicProperties properties = HystrixPlugins.getInstance().getDynamicProperties();

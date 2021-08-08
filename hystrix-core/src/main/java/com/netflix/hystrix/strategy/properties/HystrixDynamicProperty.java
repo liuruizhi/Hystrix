@@ -33,6 +33,9 @@ public interface HystrixDynamicProperty<T> extends HystrixProperty<T>{
     /**
      * Register a callback to be run if the property is updated.
      * Backing implementations may choose to do nothing.
+     *
+     * 如果有属性被修改会调用该函数
+     *
      * @param callback callback.
      */
     public void addCallback(Runnable callback);

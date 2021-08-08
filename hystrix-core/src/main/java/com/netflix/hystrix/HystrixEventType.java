@@ -26,26 +26,32 @@ import java.util.List;
  * These are most often accessed via {@link HystrixRequestLog} or {@link HystrixCommand#getExecutionEvents()}.
  */
 public enum HystrixEventType {
-    EMIT(false),
+
+
     SUCCESS(true),
+    BAD_REQUEST(true),
+    FALLBACK_FAILURE(true),
+    FALLBACK_SUCCESS(true),
+    FALLBACK_REJECTION(true),
+    FALLBACK_DISABLED(true),
+    FALLBACK_MISSING(true),
+    RESPONSE_FROM_CACHE(true),
+    CANCELLED(true),
+
+    EMIT(false),
     FAILURE(false),
     TIMEOUT(false),
-    BAD_REQUEST(true),
     SHORT_CIRCUITED(false),
     THREAD_POOL_REJECTED(false),
     SEMAPHORE_REJECTED(false),
     FALLBACK_EMIT(false),
-    FALLBACK_SUCCESS(true),
-    FALLBACK_FAILURE(true),
-    FALLBACK_REJECTION(true),
-    FALLBACK_DISABLED(true),
-    FALLBACK_MISSING(true),
     EXCEPTION_THROWN(false),
-    RESPONSE_FROM_CACHE(true),
-    CANCELLED(true),
     COLLAPSED(false),
     COMMAND_MAX_ACTIVE(false);
 
+    /**
+     * 是否是终止事件
+     */
     private final boolean isTerminal;
 
     HystrixEventType(boolean isTerminal) {
